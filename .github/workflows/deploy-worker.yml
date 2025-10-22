@@ -1,0 +1,50 @@
+name: Deploy Worker to Cloudflare
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'api/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy API Worker
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./api
+        run: npm ci
+
+      - name: Install Wrangler v4
+        working-directory: ./api
+        run: npm i -D wrangler@^4
+
+      - name: Check Wrangler version
+        working-directory: ./api
+        run: npx wrangler --version
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./api
+          command: deploy --minify
+
+      - name: Deployment summary
+        run: |
+          echo "✅ Worker deployed successfully!"
+          echo "🚀 Deployed at: $(date)"
