@@ -67,3 +67,4 @@ temp/
 .vercel
 .cloudflare
 .env.production
+.github
