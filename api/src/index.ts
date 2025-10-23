@@ -30,9 +30,8 @@ interface Env {
 	CLERK_PUBLISHABLE_KEY: string;      // Clerk publishable key (pk_test_...)
 	STRIPE_SECRET_KEY: string;          // Stripe secret key (sk_test_...)
 	STRIPE_WEBHOOK_SECRET?: string;     // Stripe webhook signing secret (whsec_...)
-	STRIPE_PRICE_ID_PRO?: string;       // Stripe price ID for Pro tier
-	STRIPE_PRICE_ID_ENTERPRISE?: string; // Stripe price ID for Enterprise tier
-	STRIPE_PRICE_ID_DEVELOPER?: string;  // Stripe price ID for Developer tier
+	STRIPE_PRICE_ID_PLUS?: string;       // Stripe price ID for Plus tier
+	STRIPE_PRICE_ID_PREMIUM?: string;    // Stripe price ID for Premium/Enterprise tier
 	STRIPE_PORTAL_CONFIG_ID?: string;   // OPTIONAL: Stripe portal configuration ID (bpc_...)
 	ALLOWED_ORIGINS?: string;           // OPTIONAL: Comma-separated list of allowed origins
 	                                     // Example: "https://app.example.com,https://staging.example.com"
@@ -48,7 +47,7 @@ interface Env {
  */
 interface UsageData {
 	usageCount: number;        // Number of requests made in current period
-	plan: 'free' | 'pro' | 'enterprise' | 'developer';      // User's current plan (synced from Clerk metadata)
+	plan: 'free' | 'plus' | 'premium';      // User's current plan (synced from Clerk metadata)
 	lastUpdated: string;       // ISO timestamp of last update
 	periodStart?: string;      // Billing period start (YYYY-MM-DD)
 	periodEnd?: string;        // Billing period end (YYYY-MM-DD)
@@ -61,27 +60,22 @@ interface UsageData {
 /**
  * Tier configuration - defines limits and pricing for all tiers
  */
-type PlanTier = 'free' | 'pro' | 'enterprise' | 'developer';
+type PlanTier = 'free' | 'plus' | 'premium';
 
 const TIER_CONFIG: Record<string, { limit: number; price: number; name: string }> = {
 	free: {
-		name: 'Free',
+		name: 'free',
 		price: 0,
-		limit: 5
+		limit: 15
 	},
-	pro: {
-		name: 'Pro',
-		price: 29,
-		limit: Infinity
+	plus: {
+		name: 'plus',
+		price: 25,
+		limit: 200
 	},
-	enterprise: {
-		name: 'Enterprise',
-		price: 35,
-		limit: 10
-	},
-	developer: {
-		name: 'Developer',
-		price: 50,
+	premium: {
+		name: 'enterprise',
+		price: 199,
 		limit: Infinity
 	}
 };
@@ -90,9 +84,8 @@ const TIER_CONFIG: Record<string, { limit: number; price: number; name: string }
  * Map tier names to Stripe Price IDs from environment variables
  */
 const PRICE_ID_MAP: Record<string, (env: Env) => string> = {
-	pro: (env) => env.STRIPE_PRICE_ID_PRO || '',
-	enterprise: (env) => env.STRIPE_PRICE_ID_ENTERPRISE || '',
-	developer: (env) => env.STRIPE_PRICE_ID_DEVELOPER || ''
+	plus: (env) => env.STRIPE_PRICE_ID_PLUS || '',
+	premium: (env) => env.STRIPE_PRICE_ID_PREMIUM || ''
 };
 
 /**
@@ -167,7 +160,6 @@ function validateEnv(env: Env): { valid: boolean; missing: string[] } {
 		'CLERK_SECRET_KEY',
 		'CLERK_PUBLISHABLE_KEY',
 		'STRIPE_SECRET_KEY',
-		'STRIPE_PRICE_ID',
 		'CLERK_JWT_TEMPLATE',
 	];
 
@@ -505,6 +497,24 @@ export default {
 			});
 		}
 
+		// Get available tiers (no auth required - public pricing info)
+		if (url.pathname === '/api/tiers' && request.method === 'GET') {
+			const tiers = Object.entries(TIER_CONFIG)
+				.map(([key, config]) => ({
+					id: key,
+					name: config.name,
+					price: config.price,
+					limit: config.limit === Infinity ? 'unlimited' : config.limit,
+					hasPriceId: !!PRICE_ID_MAP[key],
+				}))
+				.sort((a, b) => a.price - b.price); // Sort by price: lowest to highest
+
+			return new Response(JSON.stringify({ tiers }), {
+				status: 200,
+				headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+			});
+		}
+
 		// Stripe webhook doesn't require JWT auth
 		if (url.pathname === '/webhook/stripe' && request.method === 'POST') {
 			return await stripeWebhookHandler(request, env);
@@ -742,14 +752,24 @@ async function handleCreateCheckout(
 		const userEmail = user.emailAddresses[0]?.emailAddress || '';
 
 		// Get target tier from request body
-		const body = await request.json().catch(() => ({ tier: 'pro' }));
-		const targetTier = body.tier || 'pro';
+		const body = await request.json().catch((err) => {
+			console.error('❌ Failed to parse request body:', err);
+			return {};
+		}) as { tier?: string };
+		// Default to first available paid tier (dynamic!)
+		const firstPaidTier = Object.keys(PRICE_ID_MAP)[0];
+		const targetTier = body.tier || firstPaidTier;
+
+		console.log(`🎯 Checkout requested for tier: ${targetTier}`);
 
 		// Get the price ID for target tier
 		const getPriceId = PRICE_ID_MAP[targetTier];
 		const priceId = getPriceId ? getPriceId(env) : '';
 
+		console.log(`💳 Price ID for ${targetTier}: ${priceId}`);
+
 		if (!priceId) {
+			console.error(`❌ No price ID configured for tier: ${targetTier}`);
 			throw new Error(`No price ID configured for tier: ${targetTier}`);
 		}
 
@@ -772,6 +792,9 @@ async function handleCreateCheckout(
 				'line_items[0][price]': priceId,
 				'line_items[0][quantity]': '1',
 				'metadata[userId]': userId,
+				'metadata[tier]': targetTier,
+				'subscription_data[metadata][userId]': userId,
+				'subscription_data[metadata][tier]': targetTier,
 			}).toString(),
 		});
 

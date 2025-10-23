@@ -1,198 +1,233 @@
-# Tier Configurator
+# Tier Configuration System
 
-**One tool. One job. Generate custom pricing tiers for your SaaS in 2 minutes.**
-
-## What It Does
-
-This AI agent helps you configure custom pricing tiers by:
-- ✅ Asking you questions about your tiers (names, prices, limits, features)
-- ✅ Generating backend configuration code
-- ✅ Creating beautiful pricing cards for your landing page
-- ✅ Building tier-specific dashboards
-- ✅ Showing you how to connect everything to Stripe
+This folder contains the slash command for configuring multi-tier SaaS pricing.
 
 ## Quick Start
 
-### Prerequisites
-
-1. **Claude Code installed** - This tool requires Claude Code CLI
-2. **Stripe products created** - Have your Price IDs ready (e.g., `price_abc123`)
-3. **Products have metadata** - Each Stripe product needs `{ "plan": "tiername" }` in metadata
-
-### Run the Configurator
-
-```bash
-cd mcp-agents
-claude code .claude/tier-configurator.json
-```
-
-Then tell Claude:
+To configure or change your pricing tiers:
 
 ```
-Read knowledge/tier-setup-guide.md and help me configure my pricing tiers.
-Ask me about my tiers one by one, then generate all the code.
+/configure-tiers
 ```
 
-### What You'll Be Asked
+Answer simple questions and it updates everything automatically.
 
-1. **How many tiers?** (2-5 recommended)
-2. **For each tier:**
-   - Name (e.g., "free", "starter", "pro")
-   - Monthly price ($0, $9, $29, etc.)
-   - Request limit (5, 50, unlimited, etc.)
-   - Key features (comma-separated)
-   - Short description (one sentence)
-   - Stripe Price ID (for paid tiers only)
+---
 
-### What Gets Generated
+## What It Does
 
-**Backend** (`api/src/index.ts`):
-- Type definitions for your tiers
-- Tier configuration object with limits/prices
-- Price ID mapping for Stripe
-- Updated checkout logic
-- Updated usage validation
+The `/configure-tiers` command:
 
-**Frontend** (`frontend-v2/src/pages/Landing.tsx`):
-- Pricing cards with your tier names/prices
-- Upgrade buttons that pass tier names
-- Beautiful gradient styling
+1. **Asks you simple questions:**
+   - How many tiers? (2-4)
+   - For each tier: name, price, limit, features, Stripe Price ID, popular badge
 
-**Frontend** (`frontend-v2/src/pages/Dashboard.tsx`):
-- Tier-specific usage displays
-- Colored gradients per tier
-- Upgrade CTAs based on current tier
+2. **Updates all necessary files:**
+   - Backend: `api/src/index.ts` (types, TIER_CONFIG, PRICE_ID_MAP)
+   - Frontend: `Dashboard.tsx`, `Landing.tsx`, `ChoosePlanPage.tsx`
+   - Env vars: `api/.dev.vars`
 
-**Environment** (`api/.dev.vars`):
-- Price ID variables for each paid tier
+3. **Checks for common gotchas:**
+   - Removes hardcoded tier fallbacks
+   - Validates environment variables
+   - Ensures type consistency
+
+4. **Gives you a checklist:**
+   - Stripe product metadata setup
+   - Server restart reminders
+   - Test upgrade flow instructions
+
+---
 
 ## Example Session
 
 ```
-You: Read knowledge/tier-setup-guide.md and configure my pricing tiers.
+You: /configure-tiers
 
-Claude: I'll help you configure your pricing tiers! Let me ask you some questions.
-
-How many tiers would you like? (2-5 recommended)
-
+Claude: How many tiers? (2-4)
 You: 3
 
-Claude: Great! Let's configure each tier.
+Claude: Tier 1 name? (lowercase, no spaces)
+You: free
 
-=== Tier 1 (usually Free) ===
-- Name: free
-- Monthly price: $0
-- Request limit: 5
-- Features: Basic AI, Cloud storage, Community support
-- Description: Perfect for trying out
+Claude: Display name?
+You: Free
 
-=== Tier 2 ===
-- Name: starter
-- Monthly price: $9
-- Request limit: 50
-- Features: Priority processing, Email support, Advanced AI
-- Description: For growing businesses
-- Stripe Price ID: price_abc123
+Claude: Price? (just the number)
+You: 0
 
-=== Tier 3 ===
-- Name: pro
-- Monthly price: $29
-- Request limit: unlimited
-- Features: Unlimited requests, API access, Priority support, Webhooks
-- Description: For power users
-- Stripe Price ID: price_def456
+Claude: Limit? (number or 'unlimited')
+You: 15
 
-Claude: Perfect! Generating all code now...
-[Modifies all files]
+Claude: Features? (comma-separated)
+You: Basic processing, Cloud storage
 
-✅ Configuration complete!
+Claude: Stripe Price ID? (or 'none' for free tier)
+You: none
 
-📋 Next steps:
-1. Verify Stripe product metadata matches:
-   - starter → { "plan": "starter" }
-   - pro → { "plan": "pro" }
-2. Test locally:
-   cd api && npm run dev
-   cd frontend-v2 && npm run dev
-3. Sign up, upgrade, and verify routing works!
+Claude: Show Popular badge? (yes/no)
+You: no
+
+[Repeats for Tier 2 and Tier 3]
+
+✅ Done! Updated 3 tiers: free, plus, premium
+
+⚠️ IMPORTANT CHECKS:
+1. Verify Stripe product metadata matches tier names
+2. Restart API server to load new .dev.vars
+3. Test upgrade flow
 ```
-
-## How JWT Routing Works
-
-**The magic:** Your Stripe product metadata automatically routes users to the right dashboard.
-
-```
-Stripe Product → metadata: { plan: "starter" }
-      ↓
-Webhook updates Clerk → publicMetadata.plan = "starter"
-      ↓
-JWT includes → { "plan": "starter" }
-      ↓
-Frontend reads → user.publicMetadata.plan === "starter"
-      ↓
-Dashboard shows → Starter-specific UI (purple gradient, 50 limit)
-```
-
-**No JWT template changes needed!** The template stays as:
-```json
-{
-  "plan": "{{user.public_metadata.plan}}"
-}
-```
-
-It automatically picks up whatever tier name is in the metadata.
-
-## File Structure
-
-```
-mcp-agents/
-├── .claude/
-│   └── tier-configurator.json     (agent MCP config)
-├── knowledge/
-│   └── tier-setup-guide.md        (comprehensive code examples)
-└── README.md                      (this file)
-```
-
-## What You Still Do Manually
-
-This tool **doesn't** automate:
-- ❌ Creating Stripe products/prices (you do this in Stripe Dashboard)
-- ❌ Setting up webhooks (you already have this from initial setup)
-- ❌ Clerk JWT template (no changes needed - it's already dynamic)
-- ❌ Deploying (you do this via GitHub Actions as usual)
-
-Why? These are one-time setup steps that you've already done. This tool focuses on the **hard part**: generating all the tier-specific code.
-
-## Troubleshooting
-
-### "Dashboard doesn't update after upgrade"
-User needs to refresh browser to get new JWT with updated plan.
-
-### "Checkout fails with 'No price ID configured'"
-Check that tier name in Stripe metadata matches button's `handleUpgrade('tiername')` exactly.
-
-### "Backend returns wrong limit"
-Verify `TIER_CONFIG` object has entry for the user's plan (case-sensitive).
-
-### "Want to add more tiers later?"
-Just run the configurator again! It will regenerate all code with your new tiers.
-
-## Why This Approach?
-
-**Instead of a complex multi-agent installer,** we built one focused tool that:
-- ✅ Does one thing really well (tier configuration)
-- ✅ Generates production-ready code
-- ✅ Works with your existing Stripe setup
-- ✅ Takes 2 minutes instead of 30
-- ✅ Easy to understand and modify
-
-## Next Steps
-
-After configuring tiers, refer to the main README for:
-- Complete manual setup guide (Clerk, Stripe, deployment)
-- Production deployment instructions
-- Security best practices
 
 ---
 
-**Questions?** Check `knowledge/tier-setup-guide.md` for detailed code examples and explanations.
+## Critical Setup Requirements
+
+### 1. Stripe Product Metadata
+
+**MUST match tier name exactly:**
+
+```
+Tier in code: "plus"
+Stripe Product Metadata: { "plan": "plus" }  ✅
+
+Tier in code: "plus"
+Stripe Product Metadata: { "plan": "pro" }   ❌ BREAKS
+```
+
+**How to set:**
+1. Stripe Dashboard → Products → [Your Product]
+2. Scroll to "Metadata" section
+3. Add: Key = `plan`, Value = `<tier_name>`
+
+### 2. Environment Variables
+
+Each paid tier needs a Stripe Price ID in `api/.dev.vars`:
+
+```bash
+STRIPE_PRICE_ID_PLUS=price_1SKpMg2L5f0FfOp2d6zGtYbW
+STRIPE_PRICE_ID_PREMIUM=price_1SKpLH2L5f0FfOp2CU2X4CJU
+```
+
+**IMPORTANT:** After updating `.dev.vars`, you MUST restart the API server:
+```bash
+cd api
+# Ctrl+C to kill
+npm run dev
+```
+
+Wrangler doesn't hot-reload environment variables!
+
+### 3. Testing Checklist
+
+After running `/configure-tiers`:
+
+- [ ] Restart API server (`cd api && npm run dev`)
+- [ ] Hard refresh frontend (Ctrl+Shift+R)
+- [ ] Verify `/api/tiers` endpoint: `curl http://localhost:8787/api/tiers`
+- [ ] Check Stripe product metadata matches tier names
+- [ ] Test upgrade flow:
+  - Go to `/dashboard`
+  - Click "Upgrade Plan"
+  - Select a tier
+  - Should redirect to Stripe checkout (no 500 error!)
+  - Complete test payment
+  - Verify plan updates after redirect back
+
+---
+
+## Common Issues
+
+### 500 Error on Upgrade
+
+**Cause:** Hardcoded tier fallbacks in code referencing old tier names.
+
+**Fix:** Run `/configure-tiers` - it checks for this automatically.
+
+### Plan Doesn't Update After Payment
+
+**Cause:** Stripe product metadata doesn't match tier name.
+
+**Fix:** Update Stripe product metadata to match exactly (lowercase, no spaces).
+
+### "No price ID configured for tier: X"
+
+**Cause:**
+1. Missing env var in `.dev.vars`, OR
+2. API server not restarted after adding env var
+
+**Fix:**
+1. Check `api/.dev.vars` has `STRIPE_PRICE_ID_<TIERNAME>`
+2. Restart API server (Ctrl+C, then `npm run dev`)
+
+### Wrong Price/Limit Showing
+
+**Cause:**
+1. Stripe products have wrong prices (not updated in Stripe Dashboard)
+2. Frontend cache showing old data
+
+**Fix:**
+1. Update Stripe product prices in Dashboard
+2. Hard refresh frontend (Ctrl+Shift+R)
+3. Restart API server
+
+---
+
+## File Locations
+
+The `/configure-tiers` command is defined in:
+```
+.claude/commands/configure-tiers.md
+```
+
+Files it updates:
+```
+api/src/index.ts              (Backend config, types, logic)
+api/src/stripe-webhook.ts     (Webhook tier handling)
+api/.dev.vars                 (Environment variables)
+frontend-v2/src/pages/Dashboard.tsx      (Tier display styling)
+frontend-v2/src/pages/Landing.tsx        (Pricing page styling & features)
+frontend-v2/src/pages/ChoosePlanPage.tsx (Tier selection page)
+```
+
+---
+
+## Architecture Overview
+
+### Dynamic Tier System
+
+The system is fully dynamic - tiers are defined once in `TIER_CONFIG` and automatically flow through:
+
+1. **Backend** (`api/src/index.ts`):
+   - `TIER_CONFIG` = single source of truth
+   - `/api/tiers` endpoint returns config to frontend
+   - Usage validation checks limits dynamically
+
+2. **Frontend**:
+   - Fetches tiers from `/api/tiers` on load
+   - Renders pricing cards dynamically
+   - Styling configs (colors, badges, features) map to tier IDs
+
+3. **Stripe Integration**:
+   - Checkout session includes `metadata: { tier: "<tiername>" }`
+   - Webhook reads tier from metadata
+   - Updates Clerk `publicMetadata.plan` with tier name
+   - JWT automatically includes plan via Clerk template
+
+4. **Authentication**:
+   - Clerk JWT template: `{ "plan": "{{user.public_metadata.plan}}" }`
+   - Backend reads plan from JWT claims
+   - Validates usage against `TIER_CONFIG[plan].limit`
+
+---
+
+## Tips
+
+- **Keep tier names lowercase** - Prevents case-sensitivity bugs
+- **Always test upgrade flow** - Most bugs show up during checkout/webhook
+- **Don't hardcode tier names** - Use dynamic lookups from `TIER_CONFIG`
+- **Restart API after env changes** - Wrangler caches `.dev.vars`
+- **Use `/configure-tiers` when changing tiers** - Faster and safer than manual edits
+
+---
+
+**Last Updated:** 2025-10-23

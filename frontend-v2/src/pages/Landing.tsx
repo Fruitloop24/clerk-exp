@@ -1,43 +1,94 @@
-import { SignedIn, SignedOut, useAuth, useUser } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+interface Tier {
+  id: string;
+  name: string;
+  price: number;
+  limit: number | 'unlimited';
+  hasPriceId: boolean;
+}
+
+// Tier styling configuration for landing page
+const TIER_STYLES: Record<string, {
+  containerClass: string;
+  textColor: string;
+  checkColor: string;
+  buttonClass: string;
+  buttonText: string;
+  highlighted: boolean;
+}> = {
+  free: {
+    containerClass: 'p-8 bg-white rounded-3xl border-2 border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all',
+    textColor: 'text-slate-700',
+    checkColor: 'text-green-500',
+    buttonClass: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
+    buttonText: 'text-slate-600',
+    highlighted: false
+  },
+  plus: {
+    containerClass: 'relative p-8 bg-gradient-to-br from-cyan-500 via-cyan-600 to-cyan-700 rounded-3xl text-white shadow-2xl hover:shadow-cyan-500/50 hover:scale-105 transition-all',
+    textColor: 'text-white',
+    checkColor: 'text-white',
+    buttonClass: 'bg-white text-cyan-600 hover:bg-cyan-50',
+    buttonText: 'text-cyan-600',
+    highlighted: true
+  },
+  premium: {
+    containerClass: 'relative p-8 bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 rounded-3xl text-white shadow-2xl hover:shadow-purple-500/50 hover:scale-105 transition-all',
+    textColor: 'text-white',
+    checkColor: 'text-white',
+    buttonClass: 'bg-white text-purple-600 hover:bg-purple-50',
+    buttonText: 'text-purple-600',
+    highlighted: true
+  }
+};
+
+// Helper to get tier features based on limit
+const getTierFeatures = (tier: Tier): string[] => {
+  const features: string[] = [];
+
+  if (tier.limit === 'unlimited') {
+    features.push('Unlimited documents');
+  } else {
+    features.push(`${tier.limit} documents/month`);
+  }
+
+  if (tier.id === 'free') {
+    features.push('doc processing', 'parsing');
+  } else if (tier.id === 'plus') {
+    features.push('more docs', 'more awesome');
+  } else if (tier.id === 'premium') {
+    features.push('priority support', 'integration');
+  }
+
+  return features;
+};
 
 export default function Landing() {
-  const { getToken } = useAuth();
   const { user } = useUser();
   const navigate = useNavigate();
-  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [tiers, setTiers] = useState<Tier[]>([]);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
   const plan = (user?.publicMetadata?.plan as string) || 'free';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
-  const handleUpgrade = async (targetTier: string) => {
-    setIsUpgrading(true);
-    try {
-      const token = await getToken({ template: 'pan-api' });
-      const response = await fetch(`${API_URL}/api/create-checkout`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ tier: targetTier }),
-      });
-      const data = await response.json();
-
-      if (response.ok && data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Failed to create checkout session');
-        setIsUpgrading(false);
+  useEffect(() => {
+    // Fetch available tiers from API
+    const fetchTiers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/tiers`);
+        const data = await response.json();
+        setTiers(data.tiers || []);
+      } catch (err) {
+        console.error('Failed to fetch tiers:', err);
       }
-    } catch (error) {
-      console.error('Upgrade error:', error);
-      alert('Failed to start upgrade process');
-      setIsUpgrading(false);
-    }
-  };
+    };
+
+    fetchTiers();
+  }, [API_URL]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -64,13 +115,10 @@ export default function Landing() {
           <SignedIn>
             {plan === 'free' && (
               <button
-                onClick={() => handleUpgrade('pro')}
-                disabled={isUpgrading}
-                className={`px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 border-none rounded-lg text-white text-sm font-semibold hover:shadow-lg transition-all ${
-                  isUpgrading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                }`}
+                onClick={() => navigate('/choose-plan')}
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 border-none rounded-lg text-white text-sm font-semibold hover:shadow-lg transition-all cursor-pointer"
               >
-                {isUpgrading ? 'Loading...' : 'Upgrade to Pro'}
+                Upgrade Plan
               </button>
             )}
             <Link to="/dashboard" className="text-slate-700 no-underline px-4 py-2 hover:bg-slate-100 rounded-lg text-sm font-medium transition-all">
@@ -237,202 +285,82 @@ export default function Landing() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {/* Free Tier */}
-            <div className="p-8 bg-white rounded-3xl border-2 border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all">
-              <div className="text-center mb-6">
-                <h3 className="text-xl mb-2 text-slate-700 font-bold">Free</h3>
-                <div className="mb-3">
-                  <span className="text-5xl font-extrabold text-slate-900">$0</span>
-                  <span className="text-lg text-slate-600 font-medium">/month</span>
-                </div>
-                <p className="text-slate-600 text-sm">Perfect for trying out</p>
-              </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start gap-2 text-slate-700 text-sm">
-                  <span className="text-green-500 text-lg flex-shrink-0">✓</span>
-                  <span>5 documents/month</span>
-                </li>
-                <li className="flex items-start gap-2 text-slate-700 text-sm">
-                  <span className="text-green-500 text-lg flex-shrink-0">✓</span>
-                  <span>Basic AI extraction</span>
-                </li>
-                <li className="flex items-start gap-2 text-slate-700 text-sm">
-                  <span className="text-green-500 text-lg flex-shrink-0">✓</span>
-                  <span>Cloud storage</span>
-                </li>
-              </ul>
-              <SignedOut>
-                <button
-                  onClick={() => navigate('/sign-up')}
-                  className="w-full px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border-none rounded-xl cursor-pointer font-bold text-sm transition-all"
-                >
-                  Get Started Free
-                </button>
-              </SignedOut>
-              <SignedIn>
-                {plan === 'free' && (
-                  <button className="w-full px-4 py-3 bg-slate-100 text-slate-700 border-none rounded-xl cursor-default font-bold text-sm">
-                    Current Plan
-                  </button>
-                )}
-              </SignedIn>
-            </div>
+            {/* Dynamic Tier Cards */}
+            {tiers.map((tier) => {
+              const style = TIER_STYLES[tier.id] || TIER_STYLES.free;
+              const features = getTierFeatures(tier);
+              const isCurrent = plan === tier.id;
+              const isFree = tier.id === 'free';
 
-            {/* Pro Tier - Most Popular */}
-            <div className="relative p-8 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 rounded-3xl text-white shadow-2xl hover:shadow-purple-500/50 hover:scale-105 transition-all">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-900 px-4 py-1 rounded-full text-xs font-bold tracking-wider uppercase shadow-lg">
-                Popular
-              </div>
-              <div className="text-center mb-6">
-                <h3 className="text-xl mb-2 font-bold">Pro</h3>
-                <div className="mb-3">
-                  <span className="text-5xl font-extrabold">$29</span>
-                  <span className="text-lg opacity-90 font-medium">/month</span>
-                </div>
-                <p className="text-blue-100 text-sm">For power users</p>
-              </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start gap-2 text-sm">
-                  <span className="text-lg flex-shrink-0">✓</span>
-                  <span className="font-medium">Unlimited documents</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <span className="text-lg flex-shrink-0">✓</span>
-                  <span className="font-medium">Full API access</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <span className="text-lg flex-shrink-0">✓</span>
-                  <span className="font-medium">Priority support</span>
-                </li>
-              </ul>
-              <SignedOut>
-                <button
-                  onClick={() => navigate('/sign-up?plan=pro')}
-                  className="w-full px-4 py-3 bg-white text-blue-600 border-none rounded-xl cursor-pointer font-bold text-sm hover:bg-blue-50 shadow-xl transition-all"
-                >
-                  Start with Pro
-                </button>
-              </SignedOut>
-              <SignedIn>
-                {plan === 'free' || plan === 'enterprise' ? (
-                  <button
-                    onClick={() => handleUpgrade('pro')}
-                    disabled={isUpgrading}
-                    className={`w-full px-4 py-3 bg-white text-blue-600 border-none rounded-xl font-bold text-sm shadow-xl transition-all ${
-                      isUpgrading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50'
-                    }`}
-                  >
-                    {isUpgrading ? 'Loading...' : 'Upgrade to Pro'}
-                  </button>
-                ) : plan === 'pro' ? (
-                  <button className="w-full px-4 py-3 bg-white/20 text-white border-2 border-white rounded-xl cursor-default font-bold text-sm">
-                    ✓ Current Plan
-                  </button>
-                ) : null}
-              </SignedIn>
-            </div>
+              return (
+                <div key={tier.id} className={style.containerClass}>
+                  {/* Popular Badge */}
+                  {style.highlighted && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-900 px-4 py-1 rounded-full text-xs font-bold tracking-wider uppercase shadow-lg">
+                      Popular
+                    </div>
+                  )}
 
-            {/* Enterprise Tier */}
-            <div className="p-8 bg-white rounded-3xl border-2 border-purple-200 hover:border-purple-300 hover:shadow-xl transition-all">
-              <div className="text-center mb-6">
-                <h3 className="text-xl mb-2 text-slate-700 font-bold">Enterprise</h3>
-                <div className="mb-3">
-                  <span className="text-5xl font-extrabold text-slate-900">$35</span>
-                  <span className="text-lg text-slate-600 font-medium">/month</span>
-                </div>
-                <p className="text-slate-600 text-sm">Testing one two</p>
-              </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start gap-2 text-slate-700 text-sm">
-                  <span className="text-purple-500 text-lg flex-shrink-0">✓</span>
-                  <span>10 documents/month</span>
-                </li>
-                <li className="flex items-start gap-2 text-slate-700 text-sm">
-                  <span className="text-purple-500 text-lg flex-shrink-0">✓</span>
-                  <span>Five more docs</span>
-                </li>
-                <li className="flex items-start gap-2 text-slate-700 text-sm">
-                  <span className="text-purple-500 text-lg flex-shrink-0">✓</span>
-                  <span>Testing features</span>
-                </li>
-              </ul>
-              <SignedOut>
-                <button
-                  onClick={() => navigate('/sign-up?plan=enterprise')}
-                  className="w-full px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white border-none rounded-xl cursor-pointer font-bold text-sm transition-all"
-                >
-                  Start with Enterprise
-                </button>
-              </SignedOut>
-              <SignedIn>
-                {plan === 'free' ? (
-                  <button
-                    onClick={() => handleUpgrade('enterprise')}
-                    disabled={isUpgrading}
-                    className={`w-full px-4 py-3 bg-purple-500 text-white border-none rounded-xl font-bold text-sm transition-all ${
-                      isUpgrading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-purple-600'
-                    }`}
-                  >
-                    {isUpgrading ? 'Loading...' : 'Upgrade'}
-                  </button>
-                ) : plan === 'enterprise' ? (
-                  <button className="w-full px-4 py-3 bg-purple-100 text-purple-700 border-none rounded-xl cursor-default font-bold text-sm">
-                    ✓ Current Plan
-                  </button>
-                ) : null}
-              </SignedIn>
-            </div>
+                  {/* Tier Header */}
+                  <div className="text-center mb-6">
+                    <h3 className={`text-xl mb-2 font-bold ${style.textColor}`}>
+                      {tier.name}
+                    </h3>
+                    <div className="mb-3">
+                      <span className={`text-5xl font-extrabold ${style.textColor}`}>
+                        ${tier.price}
+                      </span>
+                      <span className={`text-lg font-medium ${style.textColor === 'text-white' ? 'opacity-90' : 'text-slate-600'}`}>
+                        /month
+                      </span>
+                    </div>
+                    <p className={`text-sm ${style.textColor === 'text-white' ? 'opacity-90' : 'text-slate-600'}`}>
+                      {isFree ? 'Perfect for trying out' : 'For power users'}
+                    </p>
+                  </div>
 
-            {/* Developer Tier */}
-            <div className="p-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-3xl text-white shadow-2xl hover:shadow-emerald-500/50 hover:scale-105 transition-all">
-              <div className="text-center mb-6">
-                <h3 className="text-xl mb-2 font-bold">Developer</h3>
-                <div className="mb-3">
-                  <span className="text-5xl font-extrabold">$50</span>
-                  <span className="text-lg opacity-90 font-medium">/month</span>
+                  {/* Features List */}
+                  <ul className="space-y-3 mb-6">
+                    {features.map((feature, idx) => (
+                      <li key={idx} className={`flex items-start gap-2 text-sm ${style.textColor}`}>
+                        <span className={`${style.checkColor} text-lg flex-shrink-0`}>✓</span>
+                        <span className={style.textColor === 'text-white' ? 'font-medium' : ''}>
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Action Buttons */}
+                  <SignedOut>
+                    <button
+                      onClick={() => navigate('/sign-up')}
+                      className={`w-full px-4 py-3 border-none rounded-xl cursor-pointer font-bold text-sm shadow-xl transition-all ${style.buttonClass}`}
+                    >
+                      {isFree ? 'Get Started Free' : 'Get Started'}
+                    </button>
+                  </SignedOut>
+                  <SignedIn>
+                    {isCurrent ? (
+                      <button className={`w-full px-4 py-3 rounded-xl cursor-default font-bold text-sm ${
+                        style.textColor === 'text-white'
+                          ? 'bg-white/20 text-white border-2 border-white'
+                          : `bg-slate-100 ${style.textColor} border-none`
+                      }`}>
+                        ✓ Current Plan
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => navigate('/choose-plan')}
+                        className={`w-full px-4 py-3 border-none rounded-xl font-bold text-sm shadow-xl transition-all cursor-pointer ${style.buttonClass}`}
+                      >
+                        Select Plan
+                      </button>
+                    )}
+                  </SignedIn>
                 </div>
-                <p className="text-emerald-100 text-sm">Work please</p>
-              </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start gap-2 text-sm">
-                  <span className="text-lg flex-shrink-0">✓</span>
-                  <span className="font-medium">Unlimited documents</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <span className="text-lg flex-shrink-0">✓</span>
-                  <span className="font-medium">Testing again</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm">
-                  <span className="text-lg flex-shrink-0">✓</span>
-                  <span className="font-medium">Full API access</span>
-                </li>
-              </ul>
-              <SignedOut>
-                <button
-                  onClick={() => navigate('/sign-up?plan=developer')}
-                  className="w-full px-4 py-3 bg-white text-emerald-600 border-none rounded-xl cursor-pointer font-bold text-sm hover:bg-emerald-50 shadow-xl transition-all"
-                >
-                  Start with Developer
-                </button>
-              </SignedOut>
-              <SignedIn>
-                {plan === 'free' || plan === 'enterprise' || plan === 'pro' ? (
-                  <button
-                    onClick={() => handleUpgrade('developer')}
-                    disabled={isUpgrading}
-                    className={`w-full px-4 py-3 bg-white text-emerald-600 border-none rounded-xl font-bold text-sm shadow-xl transition-all ${
-                      isUpgrading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-emerald-50'
-                    }`}
-                  >
-                    {isUpgrading ? 'Loading...' : 'Upgrade'}
-                  </button>
-                ) : plan === 'developer' ? (
-                  <button className="w-full px-4 py-3 bg-white/20 text-white border-2 border-white rounded-xl cursor-default font-bold text-sm">
-                    ✓ Current Plan
-                  </button>
-                ) : null}
-              </SignedIn>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -464,13 +392,10 @@ export default function Landing() {
           <SignedIn>
             {plan === 'free' ? (
               <button
-                onClick={() => handleUpgrade('pro')}
-                disabled={isUpgrading}
-                className={`px-12 py-6 text-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none rounded-2xl font-bold shadow-2xl hover:shadow-purple-500/50 hover:scale-105 transition-all ${
-                  isUpgrading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                }`}
+                onClick={() => navigate('/choose-plan')}
+                className="px-12 py-6 text-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none rounded-2xl font-bold shadow-2xl hover:shadow-purple-500/50 hover:scale-105 transition-all cursor-pointer"
               >
-                {isUpgrading ? 'Loading...' : 'Upgrade to Pro'}
+                View Plans
               </button>
             ) : (
               <Link to="/dashboard">

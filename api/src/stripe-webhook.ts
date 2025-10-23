@@ -87,15 +87,23 @@ export async function handleStripeWebhook(
 				return new Response(JSON.stringify({ error: 'No userId' }), { status: 400 });
 			}
 
-			// Update Clerk user metadata to 'pro'
+			// Get tier from session metadata (sent during checkout)
+			// IMPORTANT: Should always be present - if not, fail explicitly
+			const tier = session.metadata?.tier;
+			if (!tier) {
+				console.error('❌ No tier metadata in checkout session');
+				return new Response(JSON.stringify({ error: 'Missing tier metadata' }), { status: 400 });
+			}
+
+			// Update Clerk user metadata with purchased tier
 			try {
 				await clerkClient.users.updateUser(userId, {
 					publicMetadata: {
-						plan: 'pro',
+						plan: tier,
 						stripeCustomerId: session.customer as string,
 					},
 				});
-				console.log(`✅ Updated user ${userId} to pro plan after checkout`);
+				console.log(`✅ Updated user ${userId} to ${tier} plan after checkout`);
 			} catch (err: any) {
 				console.error(`❌ Failed to update user ${userId}:`, err.message);
 				return new Response(
@@ -116,16 +124,24 @@ export async function handleStripeWebhook(
 				return new Response(JSON.stringify({ error: 'No userId' }), { status: 400 });
 			}
 
-			// Update Clerk user metadata to 'pro'
+			// Get tier from subscription metadata
+			// IMPORTANT: Should always be present - if not, fail explicitly
+			const subTier = subscription.metadata?.tier;
+			if (!subTier) {
+				console.error('❌ No tier metadata in subscription');
+				return new Response(JSON.stringify({ error: 'Missing tier metadata' }), { status: 400 });
+			}
+
+			// Update Clerk user metadata with subscription tier
 			try {
 				await clerkClient.users.updateUser(subUserId, {
 					publicMetadata: {
-						plan: 'pro',
+						plan: subTier,
 						stripeCustomerId: subscription.customer as string,
 						subscriptionId: subscription.id,
 					},
 				});
-				console.log(`✅ Updated user ${subUserId} to pro plan`);
+				console.log(`✅ Updated user ${subUserId} to ${subTier} plan`);
 			} catch (err: any) {
 				console.error(`❌ Failed to update user ${subUserId}:`, err.message);
 				return new Response(
