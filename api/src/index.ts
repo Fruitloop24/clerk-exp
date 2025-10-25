@@ -30,8 +30,8 @@ interface Env {
 	CLERK_PUBLISHABLE_KEY: string;      // Clerk publishable key (pk_test_...)
 	STRIPE_SECRET_KEY: string;          // Stripe secret key (sk_test_...)
 	STRIPE_WEBHOOK_SECRET?: string;     // Stripe webhook signing secret (whsec_...)
-	STRIPE_PRICE_ID_PLUS?: string;       // Stripe price ID for Plus tier
-	STRIPE_PRICE_ID_PREMIUM?: string;    // Stripe price ID for Premium/Enterprise tier
+	STRIPE_PRICE_ID_PRO?: string;       // Stripe price ID for Pro tier
+	STRIPE_PRICE_ID_ENTERPRISE?: string;    // Stripe price ID for Enterprise tier
 	STRIPE_PORTAL_CONFIG_ID?: string;   // OPTIONAL: Stripe portal configuration ID (bpc_...)
 	ALLOWED_ORIGINS?: string;           // OPTIONAL: Comma-separated list of allowed origins
 	                                     // Example: "https://app.example.com,https://staging.example.com"
@@ -47,7 +47,7 @@ interface Env {
  */
 interface UsageData {
 	usageCount: number;        // Number of requests made in current period
-	plan: 'free' | 'plus' | 'premium';      // User's current plan (synced from Clerk metadata)
+	plan: 'free' | 'pro' | 'enterprise';      // User's current plan (synced from Clerk metadata)
 	lastUpdated: string;       // ISO timestamp of last update
 	periodStart?: string;      // Billing period start (YYYY-MM-DD)
 	periodEnd?: string;        // Billing period end (YYYY-MM-DD)
@@ -60,22 +60,22 @@ interface UsageData {
 /**
  * Tier configuration - defines limits and pricing for all tiers
  */
-type PlanTier = 'free' | 'plus' | 'premium';
+type PlanTier = 'free' | 'pro' | 'enterprise';
 
 const TIER_CONFIG: Record<string, { limit: number; price: number; name: string }> = {
 	free: {
 		name: 'free',
 		price: 0,
-		limit: 15
+		limit: 10
 	},
-	plus: {
-		name: 'plus',
-		price: 25,
-		limit: 200
+	pro: {
+		name: 'pro',
+		price: 29,
+		limit: 50
 	},
-	premium: {
+	enterprise: {
 		name: 'enterprise',
-		price: 199,
+		price: 35,
 		limit: Infinity
 	}
 };
@@ -84,8 +84,8 @@ const TIER_CONFIG: Record<string, { limit: number; price: number; name: string }
  * Map tier names to Stripe Price IDs from environment variables
  */
 const PRICE_ID_MAP: Record<string, (env: Env) => string> = {
-	plus: (env) => env.STRIPE_PRICE_ID_PLUS || '',
-	premium: (env) => env.STRIPE_PRICE_ID_PREMIUM || ''
+	pro: (env) => env.STRIPE_PRICE_ID_PRO || '',
+	enterprise: (env) => env.STRIPE_PRICE_ID_ENTERPRISE || ''
 };
 
 /**

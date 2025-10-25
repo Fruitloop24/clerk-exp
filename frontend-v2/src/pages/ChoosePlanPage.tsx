@@ -80,9 +80,9 @@ export default function ChoosePlanPage() {
     switch (tierId) {
       case 'free':
         return 'bg-white border-2 border-slate-200';
-      case 'plus':
+      case 'pro':
         return 'bg-gradient-to-br from-cyan-500 via-cyan-600 to-cyan-700';
-      case 'premium':
+      case 'enterprise':
         return 'bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800';
       default:
         return 'bg-gradient-to-br from-blue-500 to-blue-600';
@@ -94,12 +94,12 @@ export default function ChoosePlanPage() {
 
     const features: string[] = [limitText];
 
-    if (tier.id === 'plus') {
-      features.push('more docs', 'more awesome');
-    } else if (tier.id === 'premium') {
-      features.push('priority support', 'integration');
+    if (tier.id === 'pro') {
+      features.push('api');
+    } else if (tier.id === 'enterprise') {
+      features.push('support');
     } else if (tier.id === 'free') {
-      features.push('doc processing', 'parsing');
+      features.push('api');
     }
 
     return features;

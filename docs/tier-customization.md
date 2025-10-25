@@ -1,39 +1,35 @@
 # Tier Customization Guide
 
-This template ships with **2 default tiers** (Free + Pro). This guide shows you how to add more tiers or customize existing ones.
+This template ships with **3 default tiers** (Free, Pro, Enterprise). This guide shows you how to add more tiers or customize existing ones.
 
-## Quick Start: Use the MCP Agent
+## Quick Start: Use the `/configure-tiers` Command
 
-The fastest way to configure custom tiers is with the Claude Code MCP agent.
+The fastest way to configure custom tiers is with the `/configure-tiers` slash command.
 
 ### Prerequisites
-- **Claude Code** installed and configured
 - **Stripe Price IDs** ready for each paid tier
 
-### Run the Agent
+### Run the Command
 
-```bash
-cd mcp-agents
-claude code .claude/tier-configurator.json
-```
-
-Then ask Claude:
+In Claude Code, simply type:
 
 ```
-Read knowledge/tier-setup-guide.md and help me configure pricing tiers.
-I want to add [number] tiers with the following structure:
-[Describe your tiers]
+/configure-tiers
 ```
 
-**What the agent does:**
-1. ✅ Asks questions about each tier (name, price, limits, features)
+Then answer the questions:
+- How many tiers? (2-4)
+- For each tier: name, price, limit, features, Stripe Price ID, popular badge
+
+**What it does:**
+1. ✅ Asks questions about each tier
 2. ✅ Updates backend `TIER_CONFIG` in `api/src/index.ts`
 3. ✅ Adds Stripe Price ID mappings
-4. ✅ Generates frontend pricing cards in `frontend-v2/src/pages/Landing.tsx`
-5. ✅ Updates dashboard usage displays
-6. ✅ Adds environment variables to `.dev.vars`
+4. ✅ Updates frontend pricing cards (`Landing.tsx`, `Dashboard.tsx`, `ChoosePlanPage.tsx`)
+5. ✅ Adds environment variables to `.dev.vars`
+6. ✅ Checks for common gotchas (hardcoded fallbacks, metadata consistency)
 
-**Time to complete:** ~2-5 minutes
+**Time to complete:** ~2-3 minutes
 
 ---
 

@@ -28,7 +28,7 @@ const TIER_STYLES: Record<string, {
     buttonText: 'text-slate-600',
     highlighted: false
   },
-  plus: {
+  pro: {
     containerClass: 'relative p-8 bg-gradient-to-br from-cyan-500 via-cyan-600 to-cyan-700 rounded-3xl text-white shadow-2xl hover:shadow-cyan-500/50 hover:scale-105 transition-all',
     textColor: 'text-white',
     checkColor: 'text-white',
@@ -36,7 +36,7 @@ const TIER_STYLES: Record<string, {
     buttonText: 'text-cyan-600',
     highlighted: true
   },
-  premium: {
+  enterprise: {
     containerClass: 'relative p-8 bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 rounded-3xl text-white shadow-2xl hover:shadow-purple-500/50 hover:scale-105 transition-all',
     textColor: 'text-white',
     checkColor: 'text-white',
@@ -57,11 +57,11 @@ const getTierFeatures = (tier: Tier): string[] => {
   }
 
   if (tier.id === 'free') {
-    features.push('doc processing', 'parsing');
-  } else if (tier.id === 'plus') {
-    features.push('more docs', 'more awesome');
-  } else if (tier.id === 'premium') {
-    features.push('priority support', 'integration');
+    features.push('api');
+  } else if (tier.id === 'pro') {
+    features.push('api');
+  } else if (tier.id === 'enterprise') {
+    features.push('support');
   }
 
   return features;

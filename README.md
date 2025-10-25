@@ -220,36 +220,28 @@ stripe listen --forward-to http://localhost:8787/webhook/stripe
 
 ## Add More Tiers (Optional)
 
-Default template ships with **2 tiers**: Free and Pro.
+Default template ships with **3 tiers**: Free, Pro, and Enterprise.
 
-### Use the MCP Agent (Fastest)
+### Use the `/configure-tiers` Command (Fastest)
 
-If you have Claude Code installed:
+If you have Claude Code, simply type:
 
-```bash
-cd mcp-agents
-claude code .claude/tier-configurator.json
+```
+/configure-tiers
 ```
 
-Tell Claude:
-```
-Help me configure pricing tiers. I want [number] tiers with these details:
-[Describe your tiers: names, prices, limits, features]
-```
+Answer the questions about your tiers (name, price, limit, features), and it automatically updates:
+- ✅ Backend `TIER_CONFIG` with limits and prices
+- ✅ Frontend pricing cards with your branding
+- ✅ Dashboard displays for each tier
+- ✅ Environment variables
+- ✅ All routing and Stripe integration
 
-**What the agent does:**
-- ✅ Asks questions about each tier
-- ✅ Updates backend `TIER_CONFIG` with limits and prices
-- ✅ Generates frontend pricing cards with your branding
-- ✅ Adds dashboard displays for each tier
-- ✅ Sets up environment variables
-- ✅ Handles all routing and Stripe integration
-
-**Time: ~2-5 minutes**
+**Time: ~2-3 minutes**
 
 ### Manual Configuration
 
-Don't have Claude Code? Follow the [Tier Customization Guide](docs/tier-customization.md) for step-by-step instructions.
+Prefer manual control? Follow the [Tier Customization Guide](docs/tier-customization.md) for step-by-step instructions.
 
 ---
 
@@ -413,12 +405,6 @@ clerk-exp/
 │   │   └── main.tsx           # Entry + ClerkProvider
 │   └── vite.config.ts
 │
-├── mcp-agents/                 # AI tier configurator
-│   ├── .claude/
-│   │   └── tier-configurator.json
-│   └── knowledge/
-│       └── tier-setup-guide.md
-│
 ├── docs/                       # Complete documentation
 │   ├── architecture.md
 │   ├── setup.md
@@ -427,10 +413,13 @@ clerk-exp/
 │   ├── tier-customization.md
 │   └── faq.md
 │
-├── .github/workflows/
-│   └── deploy-worker.yml      # CI/CD for Workers
+├── .claude/commands/
+│   └── configure-tiers.md      # /configure-tiers slash command
 │
-└── README.md                  # This file
+├── .github/workflows/
+│   └── deploy-worker.yml       # CI/CD for Workers
+│
+└── README.md                   # This file
 ```
 
 **Total Code:** ~2,500 lines TypeScript (backend + frontend)
@@ -444,7 +433,7 @@ clerk-exp/
 1. **Follow Quick Start** above to get local development running
 2. **Read [Setup Guide](docs/setup.md)** for detailed configuration steps
 3. **Test end-to-end** - Sign up, upgrade, verify webhooks work
-4. **Customize tiers** - Use MCP agent or manual configuration
+4. **Customize tiers** - Use `/configure-tiers` command or manual configuration
 5. **Add your product logic** - Drop your app behind the auth/billing layer
 
 ### Before Launch
