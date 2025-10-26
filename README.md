@@ -8,7 +8,7 @@
 
 Stateless JWT architecture • No database to maintain • Free hosting until 10,000+ users
 
-**[📊 See cost breakdown →](docs/features/cost-breakdown.md)**
+**[📊 See cost breakdown →](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/cost-breakdown.md)**
 
 ---
 
@@ -35,7 +35,7 @@ Most SaaS templates are "hello world" demos. **This is production-ready infrastr
 ### 🔐 Stateless JWT Authentication
 User's plan lives in the token. **Zero database lookups** for authorization.
 
-**[🔍 Architecture deep dive →](docs/features/architecture.md)**
+**[🔍 Architecture deep dive →](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/architecture.md)**
 
 </td>
 <td width="50%">
@@ -43,7 +43,7 @@ User's plan lives in the token. **Zero database lookups** for authorization.
 ### 💳 Subscription Billing
 Stripe integration with webhooks, customer portal, and tier management.
 
-**[💰 Cost breakdown →](docs/features/cost-breakdown.md)**
+**[💰 Cost breakdown →](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/cost-breakdown.md)**
 
 </td>
 </tr>
@@ -53,7 +53,7 @@ Stripe integration with webhooks, customer portal, and tier management.
 ### 📊 Usage Limits & Tracking
 Per-tier request limits with monthly resets. Built-in enforcement.
 
-**[🏗️ Architecture guide →](docs/features/architecture.md)**
+**[🏗️ Architecture guide →](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/architecture.md)**
 
 </td>
 <td width="50%">
@@ -61,7 +61,7 @@ Per-tier request limits with monthly resets. Built-in enforcement.
 ### 🌍 Global Edge Deployment
 Runs in **300+ cities**. ~50ms response times worldwide. Zero cold starts.
 
-**[📐 How it works →](docs/features/architecture.md)**
+**[📐 How it works →](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/architecture.md)**
 
 </td>
 </tr>
@@ -71,7 +71,7 @@ Runs in **300+ cities**. ~50ms response times worldwide. Zero cold starts.
 ### 🛡️ Security Hardening
 Rate limiting, webhook verification, CORS, security headers. **Built-in.**
 
-**[🔒 Security guide →](docs/information/security.md)**
+**[🔒 Security guide →](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/information/security.md)**
 
 </td>
 <td width="50%">
@@ -79,7 +79,7 @@ Rate limiting, webhook verification, CORS, security headers. **Built-in.**
 ### 💵 $0 Hosting Costs
 **Free until 10k+ users** on Cloudflare's free tier. Then ~$31/month.
 
-**[📈 See cost breakdown →](docs/features/cost-breakdown.md)**
+**[📈 See cost breakdown →](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/cost-breakdown.md)**
 
 </td>
 </tr>
@@ -95,7 +95,7 @@ This template: `Request → Verify JWT (plan included) → Check limits → Proc
 
 **No database lookups.** The user's subscription tier is embedded in their JWT. When they upgrade, Stripe webhooks update Clerk metadata, and the next JWT automatically includes the new plan.
 
-**📖 Deep dive:** [Architecture Guide](docs/features/architecture.md)
+**📖 Deep dive:** [Architecture Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/architecture.md)
 
 **2. Edge-Native Architecture**
 
@@ -150,7 +150,7 @@ Leverage Cloudflare's global network
 <td colspan="2" align="center">
 
 **💰 Cost-Conscious Founders**
-$0/month until you're making money • **[See detailed costs →](docs/features/cost-breakdown.md)**
+$0/month until you're making money • **[See detailed costs →](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/cost-breakdown.md)**
 
 </td>
 </tr>
@@ -260,7 +260,7 @@ cd ../frontend-v2 && npm install
 
 Clerk handles all user authentication and JWT tokens for this application.
 
-**📖 Follow the detailed setup guide:** [Clerk Setup Guide](docs/platforms/clerk.md)
+**📖 Follow the detailed setup guide:** [Clerk Setup Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/platforms/clerk.md)
 
 This guide will walk you through:
 - Creating your Clerk application
@@ -278,7 +278,7 @@ cp api/.dev.vars.example api/.dev.vars
 cp frontend-v2/.env.example frontend-v2/.env
 ```
 
-**📋 See complete examples:** [Backend .dev.vars](docs/sample-files/backend-dev-vars-example.md) | [Frontend .env](docs/sample-files/frontend-env-example.md)
+**📋 See complete examples:** [Backend .dev.vars](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/sample-files/backend-dev-vars-example.md) | [Frontend .env](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/sample-files/frontend-env-example.md)
 
 Your `api/.dev.vars` should look like this:
 ```bash
@@ -300,7 +300,7 @@ VITE_API_URL=http://localhost:8787           # Local backend URL
 
 Stripe handles all payment processing and subscription billing for this application.
 
-**📖 Follow the detailed setup guide:** [Stripe Setup Guide](docs/platforms/stripe.md)
+**📖 Follow the detailed setup guide:** [Stripe Setup Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/platforms/stripe.md)
 
 This guide will walk you through:
 - Getting your Stripe API keys
@@ -308,7 +308,7 @@ This guide will walk you through:
 - Setting up the Customer Portal for subscription management
 - Getting your Price IDs and Portal Configuration ID
 
-**📋 See complete backend config:** [Backend .dev.vars Example](docs/sample-files/backend-dev-vars-example.md)
+**📋 See complete backend config:** [Backend .dev.vars Example](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/sample-files/backend-dev-vars-example.md)
 
 **✅ When complete, you should have:**
 
@@ -352,7 +352,7 @@ Modify everything in natural language to fit your product.
 
 **📝 Manual Configuration**
 
-Prefer manual control? Follow the [Manual Tier Setup Guide](docs/sample-files/manual-tier-setup.md) for step-by-step instructions on updating each file.
+Prefer manual control? Follow the [Manual Tier Setup Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/sample-files/manual-tier-setup.md) for step-by-step instructions on updating each file.
 
 ---
 
@@ -397,7 +397,7 @@ Once local development is working, you're ready to deploy your SaaS to productio
 
 Your backend API will run on Cloudflare's global edge network (300+ cities worldwide) with ~50ms response times.
 
-**📖 Follow the detailed deployment guide:** [Cloudflare Workers Deployment](docs/platforms/cf.md)
+**📖 Follow the detailed deployment guide:** [Cloudflare Workers Deployment](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/platforms/cf.md)
 
 This guide will walk you through:
 - Authenticating with Cloudflare
@@ -418,7 +418,7 @@ This guide will walk you through:
 
 In local development, you used `stripe listen --forward-to` to simulate webhooks. Now you'll set up real production webhooks so Stripe can notify your API when subscriptions are created, updated, or cancelled.
 
-**📖 Follow the detailed deployment guide:** [Stripe Webhooks Deployment](docs/deployments/stripe-deploy.md)
+**📖 Follow the detailed deployment guide:** [Stripe Webhooks Deployment](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/deployments/stripe-deploy.md)
 
 This guide will walk you through:
 - Migrating your Stripe products from test mode to live mode
@@ -439,7 +439,7 @@ This guide will walk you through:
 
 Deploy your React frontend to Cloudflare Pages so users can access your SaaS from anywhere in the world with fast load times.
 
-**📖 Follow the detailed deployment guide:** [Cloudflare Pages Frontend Deployment](docs/deployments/frontend-deploy.md)
+**📖 Follow the detailed deployment guide:** [Cloudflare Pages Frontend Deployment](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/deployments/frontend-deploy.md)
 
 This guide will walk you through:
 - Pushing your code to GitHub and connecting your repository
@@ -461,7 +461,7 @@ This guide will walk you through:
 
 Want to understand how the stateless JWT architecture works? How Stripe webhooks sync with Clerk? How usage tracking works without a database?
 
-**📖 Read the complete architecture guide:** [Architecture Guide](docs/features/architecture.md)
+**📖 Read the complete architecture guide:** [Architecture Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/architecture.md)
 
 This guide covers:
 - JWT as single source of truth (how plan metadata flows)
@@ -493,7 +493,7 @@ This guide covers:
 
 Compare that to typical SaaS stacks costing $75-150/month from day one.
 
-**📖 See the complete cost analysis:** [Cost Breakdown & Comparison](docs/features/cost-breakdown.md)
+**📖 See the complete cost analysis:** [Cost Breakdown & Comparison](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/cost-breakdown.md)
 
 This guide includes:
 - Detailed cost breakdown at every scale (0-100k+ users)
@@ -513,7 +513,7 @@ This guide includes:
 **Frontend:** `frontend-v2/` - React + Vite SPA (~1,500 lines)
 **Docs:** `docs/` - Complete setup and deployment guides
 
-**📖 See the complete project structure:** [Project File Structure](docs/sample-files/project-file-structure.md)
+**📖 See the complete project structure:** [Project File Structure](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/sample-files/project-file-structure.md)
 
 This guide includes:
 - Full directory tree with explanations
@@ -528,7 +528,7 @@ This guide includes:
 
 Got questions about the template? How to customize it? What works with what?
 
-**📖 Read the complete FAQ:** [Frequently Asked Questions](docs/information/faq.md)
+**📖 Read the complete FAQ:** [Frequently Asked Questions](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/information/faq.md)
 
 Common topics covered:
 - Framework compatibility (Next.js, Vue, Svelte, React Native)
@@ -548,7 +548,7 @@ Common topics covered:
 Built-in: JWT verification, webhook signing, rate limiting, security headers, PCI compliance.
 Cloudflare: DDoS protection, WAF, Bot Fight Mode, IP restrictions, Access policies - all free.
 
-**📖 Read the complete security guide:** [Security Guide](docs/information/security.md)
+**📖 Read the complete security guide:** [Security Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/information/security.md)
 
 This guide covers:
 - Why edge deployment means fewer vulnerabilities (no servers to SSH into!)
@@ -599,7 +599,7 @@ Interested in partnerships, revenue shares, or white-label licensing?
 
 This template is optimized for speed and simplicity. We've identified some trade-offs:
 
-**📖 Read the full analysis:** [Known Limitations & Trade-Offs](docs/information/limitations.md)
+**📖 Read the full analysis:** [Known Limitations & Trade-Offs](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/information/limitations.md)
 
 - KV eventual consistency (pay-per-use apps)
 - Multi-dashboard observability
@@ -638,24 +638,24 @@ MIT - Use this template for commercial or personal SaaS projects.
 
 ## Documentation
 
-- **[Architecture Guide](docs/features/architecture.md)** - How JWT routing works, data flow diagrams
-- **[Cost Breakdown](docs/features/cost-breakdown.md)** - Detailed cost analysis at every scale
-- **[Security Guide](docs/information/security.md)** - Built-in security + Cloudflare's free features
-- **[Testing Guide](docs/testing.md)** - End-to-end testing checklist, 3-terminal setup
-- **[FAQ](docs/information/faq.md)** - Common issues, troubleshooting, best practices
+- **[Architecture Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/architecture.md)** - How JWT routing works, data flow diagrams
+- **[Cost Breakdown](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/features/cost-breakdown.md)** - Detailed cost analysis at every scale
+- **[Security Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/information/security.md)** - Built-in security + Cloudflare's free features
+- **[Testing Guide](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/testing.md)** - End-to-end testing checklist, 3-terminal setup
+- **[FAQ](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/information/faq.md)** - Common issues, troubleshooting, best practices
 
 **Platform Setup Guides:**
-- **[Clerk Setup](docs/platforms/clerk.md)** - Authentication configuration
-- **[Stripe Setup](docs/platforms/stripe.md)** - Payment processing configuration
-- **[Cloudflare Workers Deployment](docs/platforms/cf.md)** - Backend deployment
+- **[Clerk Setup](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/platforms/clerk.md)** - Authentication configuration
+- **[Stripe Setup](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/platforms/stripe.md)** - Payment processing configuration
+- **[Cloudflare Workers Deployment](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/platforms/cf.md)** - Backend deployment
 
 **Deployment Guides:**
-- **[Stripe Webhooks](docs/deployments/stripe-deploy.md)** - Production webhook configuration
-- **[Frontend Deployment](docs/deployments/frontend-deploy.md)** - Cloudflare Pages deployment
+- **[Stripe Webhooks](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/deployments/stripe-deploy.md)** - Production webhook configuration
+- **[Frontend Deployment](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/deployments/frontend-deploy.md)** - Cloudflare Pages deployment
 
 **Reference:**
-- **[Manual Tier Setup](docs/sample-files/manual-tier-setup.md)** - Add/modify pricing tiers manually
-- **[Project File Structure](docs/sample-files/project-file-structure.md)** - Complete file organization
+- **[Manual Tier Setup](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/sample-files/manual-tier-setup.md)** - Add/modify pricing tiers manually
+- **[Project File Structure](https://github.com/Fruitloop24/clerk-exp/blob/master/docs/sample-files/project-file-structure.md)** - Complete file organization
 
 ---
 
