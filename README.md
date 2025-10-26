@@ -278,7 +278,7 @@ cp api/.dev.vars.example api/.dev.vars
 cp frontend-v2/.env.example frontend-v2/.env
 ```
 
-**📋 See complete examples:** [Backend .dev.vars](docs/sample-files/.dev.vars.example.md) | [Frontend .env](docs/sample-files/.env.example.md)
+**📋 See complete examples:** [Backend .dev.vars](docs/sample-files/backend-dev-vars-example.md) | [Frontend .env](docs/sample-files/frontend-env-example.md)
 
 Your `api/.dev.vars` should look like this:
 ```bash
@@ -308,7 +308,7 @@ This guide will walk you through:
 - Setting up the Customer Portal for subscription management
 - Getting your Price IDs and Portal Configuration ID
 
-**📋 See complete backend config:** [Backend .dev.vars Example](docs/sample-files/.dev.vars.example.md)
+**📋 See complete backend config:** [Backend .dev.vars Example](docs/sample-files/backend-dev-vars-example.md)
 
 **✅ When complete, you should have:**
 
