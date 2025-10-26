@@ -1,6 +1,6 @@
 # Production SaaS Starter - Cloudflare Edge Edition
 
-> **Ship your SaaS in days, not months.** Complete auth + billing + tier management on Cloudflare's edge. Stateless JWT architecture. No database to maintain. Free hosting until 10,000+ users.
+> **Ship your SaaS in days, not months.** Complete auth + billing + tier management on Cloudflare's edge. Stateless JWT architecture. No database to maintain. Free hosting until 10,000+ users. **[Cost breakdown →](docs/features/cost-breakdown.md)**
 
 **Live Demo**: https://clerk-frontend.pages.dev/
 **Stack**: React 19 + Cloudflare Workers + Clerk + Stripe
@@ -17,8 +17,8 @@ Most SaaS templates are "hello world" demos. **This is production-ready infrastr
 ✅ **Subscription Billing** - Stripe integration with webhooks, customer portal, and tier management.
 ✅ **Usage Limits & Tracking** - Per-tier request limits with monthly resets.
 ✅ **Global Edge Deployment** - Runs in 300+ cities. ~50ms response times worldwide.
-✅ **Security Hardening** - Rate limiting, webhook verification, CORS, security headers.
-✅ **$0 Hosting Costs** - Free until 10k+ users on Cloudflare's free tier.
+✅ **Security Hardening** - Rate limiting, webhook verification, CORS, security headers. **[Security guide →](docs/information/security.md)**
+✅ **$0 Hosting Costs** - Free until 10k+ users on Cloudflare's free tier. **[See cost breakdown →](docs/features/cost-breakdown.md)**
 
 ### What Makes This Different
 
@@ -29,6 +29,8 @@ Traditional SaaS: `Request → Verify auth → Query DB for plan → Check limit
 This template: `Request → Verify JWT (plan included) → Check limits → Process`
 
 **No database lookups.** The user's subscription tier is embedded in their JWT. When they upgrade, Stripe webhooks update Clerk metadata, and the next JWT automatically includes the new plan.
+
+**📖 Deep dive:** [Architecture Guide](docs/features/architecture.md)
 
 **2. Edge-Native Architecture**
 
@@ -54,7 +56,7 @@ You only add a database when YOU need to store YOUR app's data (documents, files
 🎯 **Solo devs** - Complete backend infrastructure, no team needed
 🎯 **SaaS builders** - Focus on YOUR product, not auth/billing wiring
 🎯 **Edge-first teams** - Leverage Cloudflare's global network
-🎯 **Cost-conscious founders** - $0/month until you're making money
+🎯 **Cost-conscious founders** - $0/month until you're making money **[See costs →](docs/features/cost-breakdown.md)**
 
 ### Drop Your App Behind It
 
@@ -133,10 +135,15 @@ The JWT, usage tracking, and tier enforcement are already wired up. You write th
 
 ### Prerequisites
 
-- Node.js 20+
-- Cloudflare account (free tier)
-- Clerk account (free up to 10k users)
-- Stripe account (test mode)
+Before you begin, make sure you have:
+
+- **Node.js 20+** installed
+- **Wrangler CLI** - Cloudflare's deployment tool: `npm install -g wrangler`
+- **Stripe CLI** - For webhook testing: [Install guide](https://stripe.com/docs/stripe-cli#install)
+- **Accounts created** (all free to start):
+  - Cloudflare account (free tier)
+  - Clerk account (free up to 10k users)
+  - Stripe account (test mode)
 
 ### 1. Clone & Install
 
@@ -144,48 +151,114 @@ The JWT, usage tracking, and tier enforcement are already wired up. You write th
 git clone <your-repo>
 cd clerk-exp
 
-# Backend
+# Install backend dependencies
 cd api && npm install
 
-# Frontend
+# Install frontend dependencies
 cd ../frontend-v2 && npm install
 ```
 
-### 2. Configure Services
+### 2. Set Up Clerk Authentication
 
-Create accounts and get API keys:
+Clerk handles all user authentication and JWT tokens for this application.
 
-**Clerk** (https://clerk.com):
-- Create application
-- Create JWT template named `pan-api` with claim: `{"plan": "{{user.public_metadata.plan}}"}`
-- Copy publishable and secret keys
+**📖 Follow the detailed setup guide:** [Clerk Setup Guide](docs/platforms/clerk.md)
 
-**Stripe** (https://stripe.com):
-- Create a Pro tier product ($29/mo or your price)
-- Add metadata to product: `{"plan": "pro"}`
-- Copy Price ID (starts with `price_`)
-- Set up Customer Portal and copy config ID (starts with `bpc_`)
+This guide will walk you through:
+- Creating your Clerk application
+- Setting up the JWT template (required for tier system)
+- Getting your API keys
 
-### 3. Set Environment Variables
+**✅ When complete, you should have:**
 
-**Backend** (`api/.dev.vars`):
+Copy the example files and fill in your Clerk keys:
 ```bash
-CLERK_SECRET_KEY=sk_test_...
-CLERK_PUBLISHABLE_KEY=pk_test_...
+# Backend
+cp api/.dev.vars.example api/.dev.vars
+
+# Frontend
+cp frontend-v2/.env.example frontend-v2/.env
+```
+
+**📋 See complete examples:** [Backend .dev.vars](docs/sample-files/.dev.vars.example.md) | [Frontend .env](docs/sample-files/.env.example.md)
+
+Your `api/.dev.vars` should look like this:
+```bash
+# Clerk Configuration
+CLERK_SECRET_KEY=sk_test_abc123...      # From Clerk Dashboard
+CLERK_PUBLISHABLE_KEY=pk_test_xyz789... # From Clerk Dashboard
+CLERK_JWT_TEMPLATE=pan-api              # Exact value (must match template name)
+
+```
+
+Your `frontend-v2/.env` should look like this:
+```bash
+# Clerk Configuration
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_xyz789... # Same as above
+VITE_API_URL=http://localhost:8787           # Local backend URL
+```
+
+### 3. Set Up Stripe Payments
+
+Stripe handles all payment processing and subscription billing for this application.
+
+**📖 Follow the detailed setup guide:** [Stripe Setup Guide](docs/platforms/stripe.md)
+
+This guide will walk you through:
+- Getting your Stripe API keys
+- Creating products for each paid tier (Pro, Enterprise, etc.)
+- Setting up the Customer Portal for subscription management
+- Getting your Price IDs and Portal Configuration ID
+
+**📋 See complete backend config:** [Backend .dev.vars Example](docs/sample-files/.dev.vars.example.md)
+
+**✅ When complete, you should have:**
+
+Your `api/.dev.vars` should now look like this:
+```bash
+# Clerk Configuration (from Step 2)
+CLERK_SECRET_KEY=sk_test_abc123...
+CLERK_PUBLISHABLE_KEY=pk_test_xyz789...
 CLERK_JWT_TEMPLATE=pan-api
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...  # From Stripe CLI
-STRIPE_PRICE_ID_PRO=price_...
-STRIPE_PORTAL_CONFIG_ID=bpc_...
+
+# Stripe Configuration
+STRIPE_SECRET_KEY=sk_test_def456...           # From Stripe Dashboard
+STRIPE_PRICE_ID_PRO=price_1Abc23DEfg45HIjk    # Pro tier product price ID
+
+# Add a STRIPE_PRICE_ID for each paid tier you created in Stripe
+# The variable name should match whatever you named your tiers/products
+STRIPE_PRICE_ID_ENTERPRISE=price_1Xyz98WVut76 # Enterprise tier product price ID (if applicable)
+
+STRIPE_PORTAL_CONFIG_ID=bpc_1SK6M             # For customer subscription management
 ```
 
-**Frontend** (`frontend-v2/.env`):
-```bash
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-VITE_API_URL=http://localhost:8787
+### 4. Configure Your Pricing Tiers (Optional)
+
+The default template provides a complete multi-tier system (Free, Pro, Enterprise) with frontend routes, pricing cards, and backend enforcement. You can easily customize this using natural language with any AI CLI.
+
+**🤖 Use the `/configure-tiers` Command (Recommended - works best with Claude Code)**
+
+```
+/configure-tiers
 ```
 
-### 4. Run Locally (3 Terminals)
+Works with Claude Code, Gemini CLI, Codex CLI, or DeepSeek. Or manually call `.claude/commands/configure-tiers.md` with your AI tool.
+
+Answer questions about your tiers (name, price, limit, features), and it updates:
+- ✅ Backend tier limits and Stripe integration
+- ✅ Frontend pricing cards and routes
+- ✅ Dashboard tier displays
+- ✅ Environment variables
+
+Modify everything in natural language to fit your product.
+
+**📝 Manual Configuration**
+
+Prefer manual control? Follow the [Manual Tier Setup Guide](docs/sample-files/manual-tier-setup.md) for step-by-step instructions on updating each file.
+
+---
+
+### 5. Run Locally (3 Terminals)
 
 **Terminal 1 - Backend:**
 ```bash
@@ -218,96 +291,86 @@ stripe listen --forward-to http://localhost:8787/webhook/stripe
 
 ---
 
-## Add More Tiers (Optional)
-
-Default template ships with **3 tiers**: Free, Pro, and Enterprise.
-
-### Use the `/configure-tiers` Command (Fastest)
-
-If you have Claude Code, simply type:
-
-```
-/configure-tiers
-```
-
-Answer the questions about your tiers (name, price, limit, features), and it automatically updates:
-- ✅ Backend `TIER_CONFIG` with limits and prices
-- ✅ Frontend pricing cards with your branding
-- ✅ Dashboard displays for each tier
-- ✅ Environment variables
-- ✅ All routing and Stripe integration
-
-**Time: ~2-3 minutes**
-
-### Manual Configuration
-
-Prefer manual control? Follow the [Tier Customization Guide](docs/tier-customization.md) for step-by-step instructions.
-
----
-
 ## Deploy to Production
 
-### Backend (Cloudflare Workers)
+Once local development is working, you're ready to deploy your SaaS to production.
 
-```bash
-cd api
+### 6. Deploy Backend API (Cloudflare Workers)
 
-# Create KV namespace
-wrangler kv:namespace create USAGE_KV
-# Copy ID to wrangler.toml
+Your backend API will run on Cloudflare's global edge network (300+ cities worldwide) with ~50ms response times.
 
-# Set production secrets
-wrangler secret put CLERK_SECRET_KEY
-wrangler secret put STRIPE_SECRET_KEY
-# ... (set all secrets)
+**📖 Follow the detailed deployment guide:** [Cloudflare Workers Deployment](docs/platforms/cf.md)
 
-# Deploy
-npm run deploy
-```
+This guide will walk you through:
+- Authenticating with Cloudflare
+- Creating a KV namespace for usage tracking
+- Setting production secrets (live Clerk & Stripe keys)
+- Deploying your worker to the edge
+- Verifying your deployment
 
-### Frontend (Cloudflare Pages)
-
-1. Push to GitHub
-2. Go to Cloudflare Dashboard → **Pages** → **Create a project**
-3. Connect your repo
-4. Configure:
-   - **Root directory**: `frontend-v2`
-   - **Build command**: `npm run build`
-   - **Output directory**: `dist`
-5. Add environment variables (Clerk + API URL)
-6. Deploy!
-
-**Detailed instructions:** [Deployment Guide](docs/deployment.md)
+**✅ When complete, you'll have:**
+- Your API live at: `https://your-worker.workers.dev`
+- All secrets configured securely
+- KV namespace created and bound
+- Real-time logs available via `wrangler tail`
 
 ---
 
-## Architecture Overview
+### 7. Configure Production Webhooks
 
-### Data Flow
+In local development, you used `stripe listen --forward-to` to simulate webhooks. Now you'll set up real production webhooks so Stripe can notify your API when subscriptions are created, updated, or cancelled.
 
-```
-User Sign-Up
-    ↓
-Clerk creates account (publicMetadata.plan = "free")
-    ↓
-JWT issued with { "userId": "...", "plan": "free" }
-    ↓
-Frontend sends requests with JWT
-    ↓
-Worker verifies JWT → Extracts plan → Enforces limits
-    ↓
-User upgrades via Stripe
-    ↓
-Webhook updates Clerk metadata (plan = "pro")
-    ↓
-Next JWT refresh includes { "plan": "pro" }
-    ↓
-Unlimited access automatically enabled
-```
+**📖 Follow the detailed deployment guide:** [Stripe Webhooks Deployment](docs/deployments/stripe-deploy.md)
 
-**Key insight:** The plan lives in the JWT. No database lookups. Stateless at the edge.
+This guide will walk you through:
+- Migrating your Stripe products from test mode to live mode
+- Updating environment variables with live Stripe keys and Price IDs
+- Creating a production webhook endpoint in Stripe
+- Adding the webhook signing secret to your worker
+- Testing webhook delivery and the full upgrade flow
 
-**Deep dive:** [Architecture Guide](docs/architecture.md)
+**✅ When complete, you'll have:**
+- All products recreated in Stripe live mode with correct metadata
+- Live Stripe keys and Price IDs configured in your worker
+- Production webhook endpoint pointing to your API
+- Real-time subscription updates working (upgrade/downgrade/cancel)
+
+---
+
+### 8. Deploy Frontend
+
+Deploy your React frontend to Cloudflare Pages so users can access your SaaS from anywhere in the world with fast load times.
+
+**📖 Follow the detailed deployment guide:** [Cloudflare Pages Frontend Deployment](docs/deployments/frontend-deploy.md)
+
+This guide will walk you through:
+- Pushing your code to GitHub and connecting your repository
+- Creating a Cloudflare Pages project (watch for the Workers vs Pages tabs!)
+- Configuring build settings for Vite
+- Adding production environment variables (live Clerk keys and API URL)
+- Deploying and verifying your live frontend
+- Testing the full end-to-end flow (sign up, upgrade, billing portal)
+
+**✅ When complete, you'll have:**
+- Your frontend live at: `https://your-project.pages.dev`
+- Connected to your production backend API
+- Automatic deployments on every git push
+- Full authentication and subscription flows working
+
+---
+
+## Architecture
+
+Want to understand how the stateless JWT architecture works? How Stripe webhooks sync with Clerk? How usage tracking works without a database?
+
+**📖 Read the complete architecture guide:** [Architecture Guide](docs/features/architecture.md)
+
+This guide covers:
+- JWT as single source of truth (how plan metadata flows)
+- Complete data flow diagrams (sign-up → upgrade → tier enforcement)
+- Webhook integration architecture (Stripe → Clerk sync)
+- Usage tracking with Cloudflare KV
+- Why this approach scales without a database
 
 ---
 
@@ -328,200 +391,125 @@ Unlimited access automatically enabled
 
 ## Cost Breakdown
 
-### Development (Free Tier)
+**$0/month until 10,000+ users. Then ~$31/month. At 100k users: ~$109/month.**
 
-| Service | Free Limit | Cost |
-|---------|-----------|------|
-| Cloudflare Workers | 100k req/day | **$0** |
-| Cloudflare KV | 100k reads/day, 1k writes/day | **$0** |
-| Cloudflare Pages | Unlimited | **$0** |
-| Clerk | 10k MAU | **$0** |
-| Stripe | Free platform | **$0** + 2.9% per transaction |
-| **Total** | | **$0/month** |
+Compare that to typical SaaS stacks costing $75-150/month from day one.
 
-### Production (10k Active Users)
+**📖 See the complete cost analysis:** [Cost Breakdown & Comparison](docs/features/cost-breakdown.md)
 
-| Service | Cost | Notes |
-|---------|------|-------|
-| Cloudflare Workers | **$5/mo** | 10M requests included |
-| Cloudflare KV | **~$1/mo** | Storage + operations |
-| Clerk | **$25/mo** | 10k-50k MAU tier |
-| Stripe | **2.9% + 30¢** | Per transaction |
-| **Total** | **~$31/month** | + transaction fees |
+This guide includes:
+- Detailed cost breakdown at every scale (0-100k+ users)
+- What triggers each cost increase (so you can forecast)
+- Comparisons to other stacks (Vercel, AWS, Firebase, other SaaS templates)
+- Cost optimization strategies (batch operations, caching, aggregation)
+- Real-world cost projections with revenue scenarios
+- Hidden costs you avoid (database maintenance, CDN, SSL, monitoring)
 
-**Compare to typical SaaS stack:**
-- Vercel: $20/mo
-- Database (Supabase/PlanetScale): $25/mo
-- Redis: $5/mo
-- Auth (Auth0): $25/mo
-- **Total: $75/month** (before transactions)
-
-**Savings: $44/month** or **58% cheaper**
-
-### At Scale (100k Users)
-
-| Service | Cost |
-|---------|------|
-| Workers | $5/mo (under 10M req) |
-| KV | ~$5/mo |
-| Clerk | $99/mo (50k-100k MAU) |
-| Stripe | 2.9% + 30¢ per transaction |
-| **Total** | **~$109/month** + transaction fees |
-
-**Still no database costs.** Scale without infrastructure bloat.
-
----
-
-## Documentation
-
-- **[Architecture Guide](docs/architecture.md)** - How JWT routing works, data flow diagrams
-- **[Setup Guide](docs/setup.md)** - Complete manual setup (Clerk, Stripe, webhooks)
-- **[Deployment Guide](docs/deployment.md)** - Deploy to Cloudflare (Workers + Pages)
-- **[Testing Guide](docs/testing.md)** - End-to-end testing checklist, 3-terminal setup
-- **[Tier Customization](docs/tier-customization.md)** - Add/modify pricing tiers manually
-- **[FAQ](docs/faq.md)** - Common issues, troubleshooting, best practices
+**TL;DR:** Infrastructure costs ~3% of revenue instead of 15%. More money for building your product.
 
 ---
 
 ## File Structure
 
-```
-clerk-exp/
-├── api/                        # Cloudflare Worker (Backend)
-│   ├── src/
-│   │   ├── index.ts           # Main API (830+ lines, documented)
-│   │   └── stripe-webhook.ts  # Webhook handler (190+ lines)
-│   ├── wrangler.toml          # Worker config + KV bindings
-│   └── .dev.vars              # Local secrets (gitignored)
-│
-├── frontend-v2/                # React SPA (Frontend)
-│   ├── src/
-│   │   ├── pages/
-│   │   │   ├── Landing.tsx    # Landing + pricing cards
-│   │   │   ├── Dashboard.tsx  # Protected dashboard
-│   │   │   ├── SignInPage.tsx
-│   │   │   └── SignUpPage.tsx
-│   │   ├── App.tsx            # Router + protected routes
-│   │   └── main.tsx           # Entry + ClerkProvider
-│   └── vite.config.ts
-│
-├── docs/                       # Complete documentation
-│   ├── architecture.md
-│   ├── setup.md
-│   ├── deployment.md
-│   ├── testing.md
-│   ├── tier-customization.md
-│   └── faq.md
-│
-├── .claude/commands/
-│   └── configure-tiers.md      # /configure-tiers slash command
-│
-├── .github/workflows/
-│   └── deploy-worker.yml       # CI/CD for Workers
-│
-└── README.md                   # This file
-```
+**Backend:** `api/` - Cloudflare Worker with JWT auth + Stripe webhooks (~1,020 lines)
+**Frontend:** `frontend-v2/` - React + Vite SPA (~1,500 lines)
+**Docs:** `docs/` - Complete setup and deployment guides
 
-**Total Code:** ~2,500 lines TypeScript (backend + frontend)
+**📖 See the complete project structure:** [Project File Structure](docs/sample-files/project-file-structure.md)
+
+This guide includes:
+- Full directory tree with explanations
+- Key files and what they do
+- Environment variables reference
+- Build artifacts and gitignored files
+- Common file operations (adding pages, endpoints, tiers)
 
 ---
 
-## What's Next?
+## FAQ
 
-### After Cloning
+Got questions about the template? How to customize it? What works with what?
 
-1. **Follow Quick Start** above to get local development running
-2. **Read [Setup Guide](docs/setup.md)** for detailed configuration steps
-3. **Test end-to-end** - Sign up, upgrade, verify webhooks work
-4. **Customize tiers** - Use `/configure-tiers` command or manual configuration
-5. **Add your product logic** - Drop your app behind the auth/billing layer
+**📖 Read the complete FAQ:** [Frequently Asked Questions](docs/information/faq.md)
 
-### Before Launch
-
-1. **Switch to live keys** - Production Clerk + Stripe keys
-2. **Deploy to production** - Follow [Deployment Guide](docs/deployment.md)
-3. **Test in production** - Complete checkout flow with real payment
-4. **Set up monitoring** - Cloudflare Analytics, Stripe Dashboard, Clerk Dashboard
-5. **Configure custom domain** (optional)
-
-### When Scaling
-
-1. **Add more tiers** - Run MCP agent again or customize manually
-2. **Add database** - Only for YOUR app data (Neon, D1, PlanetScale)
-3. **Implement features** - AI, analytics, APIs - whatever you're building
-4. **Monitor costs** - Cloudflare dashboard shows usage vs free tier limits
-5. **Optimize performance** - Cache aggressively, batch KV writes
-
----
-
-## Common Questions
-
-### Does this work with my frontend framework?
-
-Yes! The backend is framework-agnostic. The frontend just needs to:
-1. Use Clerk SDK for your framework
-2. Send JWT in `Authorization: Bearer <token>` header
-
-Works with Next.js, Vue, Svelte, React Native, or any framework that can make HTTP requests.
-
-### Can I use a different payment provider?
-
-Absolutely. Replace Stripe with Paddle, LemonSqueezy, PayPal, etc. Just update the webhook handler to sync `publicMetadata.plan` in Clerk. The JWT routing pattern stays the same.
-
-### Do I need Cloudflare specifically?
-
-The backend Worker can run on Vercel Edge Functions, Netlify Edge, or Deno Deploy with minimal changes. You could even convert it to a traditional Node.js server. But Cloudflare offers the best combination of performance, pricing, and DX.
-
-### What if I need a database?
-
-Add one! Cloudflare D1 (SQLite), Neon (Postgres), or PlanetScale (MySQL) all work great. Store YOUR app data there. The template handles auth/billing without a DB - that's the innovation.
-
-### More questions?
-
-Check the [FAQ](docs/faq.md) for troubleshooting, best practices, and detailed answers.
+Common topics covered:
+- Framework compatibility (Next.js, Vue, Svelte, React Native)
+- Alternative payment providers (Paddle, LemonSqueezy, PayPal)
+- Platform alternatives (Vercel Edge, Netlify, Deno Deploy)
+- Adding a database (when and how)
+- Troubleshooting common issues
+- Security best practices
+- Performance optimization
 
 ---
 
 ## Security
 
-### Built-In Security Features
+**Small attack surface. No servers to hack. Enterprise-grade security included for free.**
 
-- ✅ JWT verification on every request
-- ✅ Stripe webhook signature verification
-- ✅ Idempotency keys for webhooks
-- ✅ Security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options)
-- ✅ Rate limiting (100 req/min per user)
-- ✅ Dynamic CORS (no wildcards)
-- ✅ User data isolation (userId-keyed storage)
-- ✅ PCI compliance (Stripe-hosted checkout)
+Built-in: JWT verification, webhook signing, rate limiting, security headers, PCI compliance.
+Cloudflare: DDoS protection, WAF, Bot Fight Mode, IP restrictions, Access policies - all free.
 
-### Production Hardening Recommendations
+**📖 Read the complete security guide:** [Security Guide](docs/information/security.md)
 
-- Enable Cloudflare Bot Fight Mode (free DDoS protection)
-- Set up error tracking (Sentry or Cloudflare Logs)
-- Monitor webhook failures (Stripe dashboard)
-- Rotate API keys periodically
-- Review Cloudflare Analytics for unusual patterns
-
-**Details:** [FAQ - Security Best Practices](docs/faq.md#best-practices)
+This guide covers:
+- Why edge deployment means fewer vulnerabilities (no servers to SSH into!)
+- All 8 built-in security features explained (with code locations)
+- **Cloudflare's 11 free security features** (DDoS, WAF, Bot Fight, Rate Limiting, Access, and more)
+- Security best practices and monitoring
+- Incident response procedures
+- Compliance (SOC 2, ISO 27001, PCI DSS, GDPR)
 
 ---
 
-## Contributing
+## Work Together
 
-This is an open-source SaaS template. Contributions welcome!
+### 🚀 Need Help?
 
-**How to contribute:**
-- 🐛 Report bugs via GitHub Issues
-- 💡 Suggest features or improvements
-- 🔀 Submit Pull Requests
-- 📖 Improve documentation
+Stuck on setup? Want custom features? Need it deployed ASAP?
 
-**Areas that need help:**
-- E2E testing with Playwright
-- Additional payment provider integrations
-- Multi-currency support
-- Example app integrations
+**I offer paid consulting and setup services:**
+- Complete deployment and configuration
+- Custom tier structures and integrations
+- Additional payment providers or databases
+- Architecture consulting and optimization
+
+**Contact:** [kc@panacea-tech.net](mailto:kc@panacea-tech.net)
+
+### ⭐ Show Support
+
+- **Star this repo** - Helps others discover it
+- **Fork and build** - Make something awesome
+- **Share it** - Help other builders find this
+
+### 💬 Get Involved
+
+- **Questions?** Open a GitHub issue or email me
+- **Bug?** Submit an issue with details
+- **Built something cool?** Share it!
+- **Want to contribute?** PRs welcome
+
+### 🤝 Open to Opportunities
+
+Interested in partnerships, revenue shares, or white-label licensing?
+
+**Let's talk:** [kc@panacea-tech.net](mailto:kc@panacea-tech.net)
+
+---
+
+## Known Limitations
+
+This template is optimized for speed and simplicity. We've identified some trade-offs:
+
+**📖 Read the full analysis:** [Known Limitations & Trade-Offs](docs/information/limitations.md)
+
+- KV eventual consistency (pay-per-use apps)
+- Multi-dashboard observability
+- No built-in CRM or customer success tools
+- Single-region KV writes
+- No testing suite
+
+**Found something we missed?** [Let us know](mailto:kc@panacea-tech.net) - we're always improving this template.
 
 ---
 
@@ -535,20 +523,42 @@ MIT - Use this template for commercial or personal SaaS projects.
 
 **Built with:**
 - [Claude Code](https://claude.com/claude-code) - AI pair programming
+- [Gemini CLI](https://ai.google.dev/) - AI assistance
+- [Codex CLI](https://openai.com/codex) - AI code generation
+- [DeepSeek](https://www.deepseek.com/) - AI development
 - [Cloudflare Workers](https://workers.cloudflare.com/) - Edge compute
 - [Clerk](https://clerk.com/) - Authentication
 - [Stripe](https://stripe.com/) - Payments
 
-**Timeline**: Production-ready SaaS infrastructure in under a week.
+**Contributors:**
+- Claude Code
+- Gemini CLI
+- Codex CLI
+- DeepSeek
+
+---
+
+## Documentation
+
+- **[Architecture Guide](docs/features/architecture.md)** - How JWT routing works, data flow diagrams
+- **[Cost Breakdown](docs/features/cost-breakdown.md)** - Detailed cost analysis at every scale
+- **[Security Guide](docs/information/security.md)** - Built-in security + Cloudflare's free features
+- **[Testing Guide](docs/testing.md)** - End-to-end testing checklist, 3-terminal setup
+- **[FAQ](docs/information/faq.md)** - Common issues, troubleshooting, best practices
+
+**Platform Setup Guides:**
+- **[Clerk Setup](docs/platforms/clerk.md)** - Authentication configuration
+- **[Stripe Setup](docs/platforms/stripe.md)** - Payment processing configuration
+- **[Cloudflare Workers Deployment](docs/platforms/cf.md)** - Backend deployment
+
+**Deployment Guides:**
+- **[Stripe Webhooks](docs/deployments/stripe-deploy.md)** - Production webhook configuration
+- **[Frontend Deployment](docs/deployments/frontend-deploy.md)** - Cloudflare Pages deployment
+
+**Reference:**
+- **[Manual Tier Setup](docs/sample-files/manual-tier-setup.md)** - Add/modify pricing tiers manually
+- **[Project File Structure](docs/sample-files/project-file-structure.md)** - Complete file organization
 
 ---
 
 **⭐ If this template saves you time, consider starring the repo!**
-
----
-
-**Questions? Issues? Feedback?**
-Open a GitHub issue or check the [FAQ](docs/faq.md).
-
-**Ready to ship?**
-[Get started with the Setup Guide →](docs/setup.md)

@@ -1,0 +1,55 @@
+# ===================================
+# CLERK AUTHENTICATION
+# ===================================
+# Get these from: https://dashboard.clerk.com/
+# NOTE: Use test keys (sk_test_..., pk_test_...) for development
+#       Switch to live keys (sk_live_..., pk_live_...) for production
+
+CLERK_SECRET_KEY=sk_test_YOUR_CLERK_SECRET_KEY_HERE
+CLERK_PUBLISHABLE_KEY=pk_test_YOUR_CLERK_PUBLISHABLE_KEY_HERE
+
+# JWT Template name (create in Clerk Dashboard → JWT Templates)
+CLERK_JWT_TEMPLATE=pan-api
+
+# ===================================
+# STRIPE PAYMENT PROCESSING
+# ===================================
+# Get API keys from: https://dashboard.stripe.com/apikeys
+# NOTE: Use test keys (sk_test_...) for development
+#       Switch to live keys (sk_live_...) for production
+
+STRIPE_SECRET_KEY=sk_test_YOUR_STRIPE_SECRET_KEY_HERE
+
+# Stripe Product Price IDs
+# Get these after creating products in Stripe Dashboard → Products
+# You need one Price ID for each paid tier
+# Format: price_1ABC123xyz...
+
+STRIPE_PRICE_ID_PRO=price_YOUR_PRO_PRICE_ID_HERE
+STRIPE_PRICE_ID_ENTERPRISE=price_YOUR_ENTERPRISE_PRICE_ID_HERE
+
+# Add more tiers as needed:
+# STRIPE_PRICE_ID_PREMIUM=price_YOUR_PREMIUM_PRICE_ID_HERE
+
+# Stripe Customer Portal Configuration ID
+# Get this from: https://dashboard.stripe.com/settings/billing/portal
+STRIPE_PORTAL_CONFIG_ID=bpc_YOUR_PORTAL_CONFIG_ID_HERE
+
+# Stripe Webhook Secret (PRODUCTION ONLY)
+# Get this after creating webhook endpoint in Stripe Dashboard → Webhooks
+# Leave commented for local development (Stripe CLI handles this)
+# STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET_HERE
+
+# ===================================
+# OPTIONAL CONFIGURATION
+# ===================================
+
+# Allowed origins for CORS (comma-separated)
+# Development: Include all local ports you use
+# Production: Your production frontend URL(s) only
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Frontend URL (for redirects)
+# Development: Your local Vite dev server
+# Production: Your deployed frontend domain
+FRONTEND_URL=http://localhost:5173
