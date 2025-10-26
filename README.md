@@ -1,9 +1,24 @@
 # Production SaaS Starter - Cloudflare Edge Edition
 
-> **Ship your SaaS in days, not months.** Complete auth + billing + tier management on Cloudflare's edge. Stateless JWT architecture. No database to maintain. Free hosting until 10,000+ users. **[Cost breakdown →](docs/features/cost-breakdown.md)**
+<div align="center">
 
-**Live Demo**: https://clerk-frontend.pages.dev/
-**Stack**: React 19 + Cloudflare Workers + Clerk + Stripe
+## 🚀 Ship your SaaS in days, not months
+
+**Complete auth + billing + tier management on Cloudflare's edge**
+
+Stateless JWT architecture • No database to maintain • Free hosting until 10,000+ users
+
+**[📊 See cost breakdown →](docs/features/cost-breakdown.md)**
+
+---
+
+### 🌐 Live Demo
+**https://clerk-frontend.pages.dev/**
+
+### ⚡ Tech Stack
+React 19 + Cloudflare Workers + Clerk + Stripe
+
+</div>
 
 ---
 
@@ -11,14 +26,64 @@
 
 Most SaaS templates are "hello world" demos. **This is production-ready infrastructure.**
 
-### The Hard Parts, Already Built
+## ✨ The Hard Parts, Already Built
 
-✅ **Stateless JWT Authentication** - User's plan lives in the token. Zero database lookups for authorization.
-✅ **Subscription Billing** - Stripe integration with webhooks, customer portal, and tier management.
-✅ **Usage Limits & Tracking** - Per-tier request limits with monthly resets.
-✅ **Global Edge Deployment** - Runs in 300+ cities. ~50ms response times worldwide.
-✅ **Security Hardening** - Rate limiting, webhook verification, CORS, security headers. **[Security guide →](docs/information/security.md)**
-✅ **$0 Hosting Costs** - Free until 10k+ users on Cloudflare's free tier. **[See cost breakdown →](docs/features/cost-breakdown.md)**
+<table>
+<tr>
+<td width="50%">
+
+### 🔐 Stateless JWT Authentication
+User's plan lives in the token. **Zero database lookups** for authorization.
+
+**[🔍 Architecture deep dive →](docs/features/architecture.md)**
+
+</td>
+<td width="50%">
+
+### 💳 Subscription Billing
+Stripe integration with webhooks, customer portal, and tier management.
+
+**[💰 Cost breakdown →](docs/features/cost-breakdown.md)**
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 📊 Usage Limits & Tracking
+Per-tier request limits with monthly resets. Built-in enforcement.
+
+**[🏗️ Architecture guide →](docs/features/architecture.md)**
+
+</td>
+<td width="50%">
+
+### 🌍 Global Edge Deployment
+Runs in **300+ cities**. ~50ms response times worldwide. Zero cold starts.
+
+**[📐 How it works →](docs/features/architecture.md)**
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🛡️ Security Hardening
+Rate limiting, webhook verification, CORS, security headers. **Built-in.**
+
+**[🔒 Security guide →](docs/information/security.md)**
+
+</td>
+<td width="50%">
+
+### 💵 $0 Hosting Costs
+**Free until 10k+ users** on Cloudflare's free tier. Then ~$31/month.
+
+**[📈 See cost breakdown →](docs/features/cost-breakdown.md)**
+
+</td>
+</tr>
+</table>
 
 ### What Makes This Different
 
