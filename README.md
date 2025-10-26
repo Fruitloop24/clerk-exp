@@ -115,13 +115,46 @@ You only add a database when YOU need to store YOUR app's data (documents, files
 
 ## Who Needs This
 
-### Perfect For
+### 🎯 Perfect For
 
-🎯 **Indie hackers** - Ship MVPs fast, validate ideas cheaply
-🎯 **Solo devs** - Complete backend infrastructure, no team needed
-🎯 **SaaS builders** - Focus on YOUR product, not auth/billing wiring
-🎯 **Edge-first teams** - Leverage Cloudflare's global network
-🎯 **Cost-conscious founders** - $0/month until you're making money **[See costs →](docs/features/cost-breakdown.md)**
+<table>
+<tr>
+<td width="50%">
+
+**🚀 Indie Hackers**
+Ship MVPs fast, validate ideas cheaply
+
+</td>
+<td width="50%">
+
+**👨‍💻 Solo Developers**
+Complete backend infrastructure, no team needed
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**🏗️ SaaS Builders**
+Focus on YOUR product, not auth/billing wiring
+
+</td>
+<td width="50%">
+
+**⚡ Edge-First Teams**
+Leverage Cloudflare's global network
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+
+**💰 Cost-Conscious Founders**
+$0/month until you're making money • **[See detailed costs →](docs/features/cost-breakdown.md)**
+
+</td>
+</tr>
+</table>
 
 ### Drop Your App Behind It
 
