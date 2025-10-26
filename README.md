@@ -32,6 +32,20 @@ Most SaaS templates are "hello world" demos. **This is production-ready infrastr
 <tr>
 <td width="50%">
 
+### 🎨 Complete Frontend Template
+**Working React template included**: Pricing pages, protected routes, customer portal, dashboard, tier cards. All wired up and ready to use.
+
+</td>
+<td width="50%">
+
+### 🤖 AI-Guided Tier Configuration
+**Claude Code `/configure-tiers`**: Answer questions, automatically updates frontend routes, pricing cards, backend limits, Stripe integration. **[See command →](https://github.com/Fruitloop24/clerk-exp/blob/master/.claude/commands/configure-tiers.md)**
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
 ### 🔐 Stateless JWT Authentication
 User's plan lives in the token. **Zero database lookups** for authorization.
 
